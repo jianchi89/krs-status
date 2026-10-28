@@ -1,0 +1,50 @@
+# 放到 krs-status 仓库的 .github/workflows/update-status-manifest.yml
+# 作用：push status.html 后自动重算 sha256，更新 status.manifest.json
+# 前提：Settings → Actions → General → Workflow permissions 选 “Read and write permissions”
+name: update-status-manifest
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'status.html'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  manifest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Recompute sha256
+        run: |
+          set -euo pipefail
+          if [ ! -f status.html ] || [ ! -f status.manifest.json ]; then
+            echo "skip: missing status.html or status.manifest.json"
+            exit 0
+          fi
+          sha=$(sha256sum status.html | cut -d' ' -f1)
+          now=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          tmp=$(mktemp)
+          jq --arg sha "$sha" --arg now "$now" \
+             '.sha256 = $sha | .updatedAt = $now' \
+             status.manifest.json > "$tmp"
+          mv "$tmp" status.manifest.json
+          echo "status.html -> $sha"
+
+      - name: Commit if changed
+        run: |
+          if git diff --quiet; then
+            echo "no manifest changes"
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add status.manifest.json
+          git commit -m "chore: sync status manifest sha256"
+          git push
