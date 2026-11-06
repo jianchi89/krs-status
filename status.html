@@ -1300,16 +1300,37 @@
     .krs-status-root.krs-editing #pane-crisis .krs-cr-cell,
     .krs-status-root.krs-editing #pane-crisis .krs-cr-val { outline: none !important; cursor: default !important; }
 
-/* ── 剧情总览：扩展条目开关 + 剧情控制器 ── */
-.krs-plot-window { width: min(96vw, 960px) !important; }
-.krs-plot-body { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 10px !important; padding: 12px 14px 16px !important; max-height: 70vh !important; overflow-y: scroll !important; overflow-x: hidden !important; align-content: start !important; scrollbar-width: thin !important; scrollbar-color: rgba(230,184,92,.45) rgba(255,255,255,.05) !important; }
+/* ── 剧情总览：标签页 / 扩展方块 / 剧情卡 ── */
+.krs-plot-window { width: min(98vw, 1040px) !important; }
+.krs-plot-tabs { display: flex !important; gap: 6px !important; padding: 6px 14px 0 !important; border-bottom: 1px solid rgba(255,255,255,.08) !important; }
+.krs-plot-tab { font-family: inherit !important; font-size: 12px !important; padding: 6px 18px !important; border: 0 !important; background: none !important; color: #a99db8 !important; cursor: pointer !important; border-bottom: 2px solid transparent !important; }
+.krs-plot-tab.active { color: #f3d79a !important; border-bottom-color: #d9b96e !important; font-weight: 700 !important; }
+.krs-plot-body { padding: 12px 14px 16px !important; max-height: 68vh !important; overflow-y: auto !important; overflow-x: hidden !important; }
 .krs-plot-body::-webkit-scrollbar { width: 8px !important; }
 .krs-plot-body::-webkit-scrollbar-track { background: rgba(255,255,255,.04) !important; border-radius: 4px !important; }
 .krs-plot-body::-webkit-scrollbar-thumb { background: rgba(230,184,92,.38) !important; border-radius: 4px !important; }
-.krs-plot-card { display: flex !important; flex-direction: column !important; min-height: 0 !important; align-self: start !important; border: 1px solid rgba(255,255,255,.10) !important; border-radius: 10px !important; overflow: hidden !important; background: rgba(255,255,255,.03) !important; }
+.krs-plot-body.grid-ext { display: grid !important; grid-template-columns: repeat(5, minmax(0, 1fr)) !important; gap: 10px !important; align-items: start !important; }
+.krs-plot-body.grid-story { display: flex !important; flex-wrap: wrap !important; align-items: flex-start !important; align-content: flex-start !important; gap: 10px !important; }
+/* 扩展页 = 带图卡片（对齐「命运之书 · 联动世界剧情」的五个一列卡片） */
+.krs-ext-sec { grid-column: 1 / -1 !important; display: flex !important; align-items: center !important; gap: 9px !important; margin: 1px 0 0 !important; padding: 0 1px !important; font-size: 10.5px !important; letter-spacing: .06em !important; color: #c9a54e !important; font-weight: 700 !important; white-space: nowrap !important; }
+.krs-ext-sec::after { content: "" !important; flex: 1 1 auto !important; height: 1px !important; min-width: 24px !important; background: linear-gradient(90deg, rgba(201,165,78,.4), rgba(201,165,78,0)) !important; }
+.krs-ext-tile { position: relative !important; aspect-ratio: 1.16 / 1 !important; min-height: 0 !important; border: 1.5px solid #382e4e !important; border-radius: 9px !important; background-color: #120e1a !important; background-position: center 22% !important; background-size: cover !important; background-repeat: no-repeat !important; overflow: hidden !important; cursor: pointer !important; text-align: left !important; font-family: inherit !important; color: #ded8e8 !important; padding: 9px 11px 10px !important; display: flex !important; flex-direction: column !important; justify-content: flex-end !important; transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease !important; }
+.krs-ext-tile::before { content: "" !important; position: absolute !important; inset: 0 !important; z-index: 0 !important; pointer-events: none !important; background: linear-gradient(180deg, rgba(10,8,16,.06) 0%, rgba(10,8,16,.26) 30%, rgba(10,8,16,.82) 62%, rgba(9,7,14,.965) 100%) !important; }
+.krs-ext-tile:not(.on)::after { content: "" !important; position: absolute !important; inset: 0 !important; z-index: 0 !important; pointer-events: none !important; background: rgba(9,7,15,.4) !important; }
+.krs-ext-tile > * { position: relative !important; z-index: 1 !important; }
+.krs-ext-tile:hover { transform: translateY(-2px) !important; border-color: #c9a54e !important; box-shadow: 0 8px 20px rgba(0,0,0,.42) !important; }
+.krs-ext-tile.on { border-color: #c9a54e !important; box-shadow: 0 0 14px rgba(201,165,78,.42) !important; }
+.krs-ext-name { display: block !important; font-size: 12.5px !important; font-weight: 700 !important; line-height: 1.35 !important; color: #f5edda !important; text-shadow: 0 1px 4px rgba(0,0,0,.85) !important; }
+.krs-ext-name i { font-style: normal !important; margin-right: 5px !important; color: #e8c06a !important; }
+.krs-ext-tile:not(.on) .krs-ext-name { color: #cfc6dd !important; }
+.krs-ext-tile:not(.on) .krs-ext-name i { color: #8e85a2 !important; }
+.krs-ext-desc { display: -webkit-box !important; -webkit-line-clamp: 3 !important; -webkit-box-orient: vertical !important; overflow: hidden !important; margin-top: 4px !important; font-size: 10px !important; line-height: 1.45 !important; color: #bcb3ca !important; text-shadow: 0 1px 3px rgba(0,0,0,.7) !important; }
+.krs-ext-state { position: absolute !important; top: 8px !important; right: 9px !important; z-index: 2 !important; font-size: 9.5px !important; letter-spacing: .06em !important; padding: 2px 8px !important; border-radius: 999px !important; border: 1px solid rgba(255,255,255,.2) !important; background: rgba(8,6,12,.6) !important; color: #b9b0c6 !important; white-space: nowrap !important; }
+.krs-ext-tile.on .krs-ext-state { color: #f3d79a !important; border-color: rgba(230,184,92,.7) !important; background: rgba(38,28,10,.66) !important; }
+.krs-plot-card { flex: 0 1 calc(50% - 5px) !important; min-width: 0 !important; display: flex !important; flex-direction: column !important; align-self: flex-start !important; border: 1px solid rgba(255,255,255,.10) !important; border-radius: 12px !important; overflow: hidden !important; background: rgba(255,255,255,.03) !important; }
 .krs-plot-card.open { border-color: rgba(230,184,92,.55) !important; }
-.krs-plot-card-head { width: 100% !important; min-height: 62px !important; border: 0 !important; padding: 8px 12px !important; display: flex !important; align-items: center !important; gap: 10px !important; background-color: #1a1424 !important; background-size: cover !important; background-position: center 35% !important; position: relative !important; cursor: pointer !important; color: #fff !important; text-align: left !important; font-family: inherit !important; flex: 0 0 auto !important; }
-.krs-plot-card-head::before { content: "" !important; position: absolute !important; inset: 0 !important; background: linear-gradient(90deg, rgba(10,8,16,.94) 0%, rgba(10,8,16,.52) 100%) !important; }
+.krs-plot-card-head { width: 100% !important; min-height: 58px !important; border: 0 !important; padding: 8px 12px !important; display: flex !important; align-items: center !important; gap: 10px !important; background-color: #1a1424 !important; background-size: cover !important; background-position: center 22% !important; position: relative !important; cursor: pointer !important; color: #fff !important; text-align: left !important; font-family: inherit !important; flex: 0 0 auto !important; }
+.krs-plot-card-head::before { content: "" !important; position: absolute !important; inset: 0 !important; background: linear-gradient(90deg, rgba(10,8,16,.97) 0%, rgba(10,8,16,.8) 100%) !important; }
 .krs-plot-card-head > * { position: relative !important; z-index: 1 !important; }
 .krs-plot-card:not(.open) .krs-plot-card-head { filter: grayscale(.9) brightness(.52) !important; }
 .krs-plot-card-name { font-size: 13px !important; font-weight: 700 !important; flex: 1 1 auto !important; min-width: 0 !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
@@ -1331,12 +1352,31 @@
 .krs-plot-stage, .krs-plot-next { display: flex !important; gap: 8px !important; font-size: 10.5px !important; line-height: 1.55 !important; margin-top: 5px !important; color: #cfc7db !important; }
 .krs-plot-stage b, .krs-plot-next b { flex: 0 0 54px !important; color: #d9b96e !important; font-weight: 700 !important; }
 .krs-plot-stage span, .krs-plot-next span { flex: 1 1 auto !important; min-width: 0 !important; }
-.krs-plot-hint { font-size: 10px !important; color: #a99db8 !important; padding: 4px 2px !important; }
+.krs-plot-warn { font-size: 10px !important; color: #e0b56a !important; padding-top: 4px !important; }
+.krs-plot-hint { font-size: 10px !important; color: #a99db8 !important; padding: 4px 14px 10px !important; }
+@media (max-width: 940px) {
+  .krs-plot-body.grid-ext { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 8px !important; }
+  .krs-ext-tile { aspect-ratio: 1.04 / 1 !important; padding: 7px 9px 8px !important; background-position: center 20% !important; }
+  .krs-ext-name { font-size: 11px !important; }
+  .krs-ext-desc { font-size: 9px !important; -webkit-line-clamp: 2 !important; }
+  .krs-ext-state { font-size: 8.5px !important; padding: 1px 6px !important; top: 6px !important; right: 6px !important; }
+  .krs-ext-sec { font-size: 9.5px !important; }
+}
 @media (max-width: 820px) {
-  .krs-plot-body { grid-template-columns: 1fr !important; max-height: 72vh !important; }
-  .krs-plot-card-head { min-height: 54px !important; }
-  .krs-plot-chapter-name { font-size: 12px !important; }
-  .krs-plot-stage b, .krs-plot-next b { flex-basis: 46px !important; }
+  .krs-plot-card { flex-basis: 100% !important; }
+  .krs-plot-body { max-height: 72vh !important; }
+}
+@media (max-width: 620px) {
+  /* 手机端：等比缩到一排三个 */
+  .krs-plot-body.grid-ext { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 6px !important; }
+  .krs-ext-tile { aspect-ratio: 0.9 / 1 !important; padding: 6px 7px 7px !important; border-width: 1px !important; border-radius: 7px !important; background-position: center 18% !important; }
+  .krs-ext-name { font-size: 9.5px !important; line-height: 1.3 !important; }
+  .krs-ext-name i { margin-right: 3px !important; }
+  .krs-ext-desc { font-size: 7.5px !important; line-height: 1.4 !important; margin-top: 2px !important; }
+  .krs-ext-state { font-size: 7.5px !important; padding: 1px 5px !important; top: 5px !important; right: 5px !important; }
+  .krs-ext-sec { font-size: 9px !important; letter-spacing: .02em !important; }
+  .krs-plot-body { padding: 10px 10px 14px !important; }
+  .krs-plot-hint { font-size: 9px !important; }
 }
 
 /* ── 顶部栏：展开态也保持一排（缩小相册/剧情等按钮） ── */
@@ -3923,44 +3963,58 @@
   /* ── 剧情总览：扩展条目开关 + 剧情控制器 ── */
   const KRS_PLOT_LINES = [
     { key: 'kl', label: '克蕾雅篇（本篇）', core: true,
-      cover: 'https://origin.picgo.net/2026/09/17/ac92bf314de5fc2fb6488b395a70a66e25515781bb8ce916.png',
-      base: ['[クレア]'], prefixes: ['[クレア][剧情细纲]'], story: '剧情', enable: '剧情.克蕾雅篇', chapter: '剧情.克蕾雅篇章',
+      cover: 'https://origin.picgo.net/2026/09/16/ddab7a63-dee3-4899-aba9-e379a0d47babce9505ef2723001f.png',
+      desc: '本篇主线 · 恶役千金的破灭回避线，序章～第十章。',
+      base: ['[クレア]', '[克蕾雅]', '[克蕾娅]'], prefixes: ['[クレア][剧情细纲]'], story: '剧情', enable: '剧情.克蕾雅篇', chapter: '剧情.克蕾雅篇章',
       current: '剧情.克蕾雅进度.当前节点', nextNode: '剧情.克蕾雅进度.下一步节点',
       chapters: ['序章','第一章','第二章','第三章','第四章','第五章','第六章','第七章','第八章','第九章','第十章'] },
     { key: 'lab', label: '伊莉丝篇（迷宫都市）', core: true,
-      cover: 'https://origin.picgo.net/2026/09/19/d1e3701a4b70c450df76c7be4db7a226dff0f9fc5cf83559.png',
-      base: ['[迷宫]'], prefixes: ['[迷宫][剧情细纲]'], story: '剧情', enable: '剧情.伊莉丝篇', chapter: '剧情.伊莉丝篇章',
+      cover: 'https://origin.picgo.net/2026/09/19/d47108f4-b5ba-4f4b-b4ab-7adb0894be09ba85294f3aa3f3b9.png',
+      desc: '迷宫都市线 · 伊莉丝与阿塞勒姆地下迷宫，序章～第九章。',
+      base: ['[迷宫]', '[迷宫都市]'], prefixes: ['[迷宫][剧情细纲]'], story: '剧情', enable: '剧情.伊莉丝篇', chapter: '剧情.伊莉丝篇章',
       current: '剧情.伊莉丝进度.当前节点', nextNode: '剧情.伊莉丝进度.下一步节点',
       chapters: ['序章','第一章','第二章','第三章','第四章','第五章','第六章','第七章','第八章','第九章'] },
     { key: 'yw', label: '勇战（圣特拉）', cover: 'https://origin.picgo.net/2026/10/28/image18c3700954ce68b0.png',
+      desc: 'MGQ Paradox · 七勇者对抗梦之主与夜之国，全 24 章。',
       prefixes: ['[勇战]'], story: '事件', event: '世界.事件.勇战-主线',
       role: '勇战-主线：鲁卡、艾丽丝、伊莉娅丝与七勇者击败梦之主，关闭夜之国',
       chapters: ['序幕1','序幕2','第一章1','第一章2','第二章1','第二章2','第三章1','第三章2','第三章3','第四章1','第四章2','第四章3','第五章1','第五章2','第五章3','第六章1','第六章2','第六章3','第七章1','第七章2','第七章3','最终章1','最终章2','最终章3'] },
     { key: 'jd', label: '救主记（贝尔蒂）', cover: 'https://origin.picgo.net/2026/10/28/e996a0904e2550b0dfe72fde8d94cb49be18ac53ee7ad523.png',
+      desc: '贝尔蒂 · 贞德救出莉莉、集齐四精灵、闯黑城，10 章。',
       prefixes: ['[救主记]'], story: '事件', event: '世界.事件.救主记-主线',
       role: '救主记-贝尔蒂篇主线：救出莉莉公主，集齐四精灵，阻止黑城邪魔复活',
       chapters: ['序章','第一章','第二章','第三章','第四章','第五章','第六章','第七章','第八章','最终章'] },
     { key: 'sequel', label: 'SEQUEL-贝蕾特里亚篇', cover: 'https://origin.picgo.net/2026/10/28/b0159f28a82dbe269496f59dc9617d927e2c73a55a48cd4e.png',
+      desc: 'SEQUEL 世界观 · 贝蕾特里亚篇的角色与势力。',
       prefixes: ['[SEQUEL]'], story: 'none' },
-    { key: 'ij', label: '医术师（温伯格）', cover: 'https://origin.picgo.net/2026/09/28/94b515d79b47bbd27a34a4b7182512d13936a17a75a1011d.png',
+    { key: 'ij', label: '医术师（温伯格）', cover: 'https://origin.picgo.net/2026/09/29/a120f9e4f3f70a376a3ea9c793fd21e48eea71d04da8e5ef9d583f90.jpg',
+      desc: '温伯格 · 奥威尔堡、北之民与医术师线，序章～最终章。',
       prefixes: ['[医术师]','[温伯格]'], story: '剧情', enable: '剧情.医术师篇', chapter: '剧情.医术师篇章',
       current: '剧情.医术师进度.当前节点', nextNode: '剧情.医术师进度.下一步节点',
       chapters: ['序章','第一章','第二章','第三章','第四章','第五章','第六章','第七章','第八章','最终章'] },
-    { key: 'bs2', label: 'BS2-残片篇', cover: 'https://origin.picgo.net/2026/10/08/77f0ce219f648a571427e5714d58240e54bdb2d9dc32d2e5.png',
+    { key: 'bs2', label: 'BS2-残片篇', cover: 'https://origin.picgo.net/2026/10/10/8e24b184-9c08-4ef5-a33d-d61fbc3e7cd9e22e2baa769f8394.png',
+      desc: 'BS2 残片篇 · 箱庭、童话碎片与爱丽丝·利德尔。',
       prefixes: ['[BS2]'], story: 'none' },
-    { key: 'pg', label: '祈愿诗篇（安纳托尔）', cover: 'https://origin.picgo.net/2026/09/29/da4a4c8d7ddc8a4e10.png',
+    { key: 'pg', label: '祈愿诗篇（安纳托尔）', cover: 'https://origin.picgo.net/2026/09/29/CG_endA_gooda767331b37aa4a31.png',
+      desc: '安纳托尔岛 · 巡礼与祈愿诗篇，序章～完结。',
       prefixes: ['[祈愿诗篇]','[安纳托尔]'], story: '剧情', enable: '剧情.祈愿诗篇篇', chapter: '剧情.祈愿诗篇篇章',
       current: '剧情.祈愿诗篇进度.当前节点', nextNode: '剧情.祈愿诗篇进度.下一步节点',
       chapters: ['序章','第一章','第二章','第三章','第四章','第五章','第六章','第七章','第八章','第九章','最终章','完结'] },
-    { key: 'cradle', label: '摇篮-格拉提亚篇', cover: 'https://origin.picgo.net/2026/10/09/2a22d924594f08f05215076841ae8b9f44eb2f199514ad4b.png',
+    { key: 'cradle', label: '摇篮-格拉提亚篇', cover: 'https://origin.picgo.net/2026/10/10/image9e5cf507b624c800.png',
+      desc: '格拉提亚 · 精灵与魔族共存的西陲乐园。',
       prefixes: ['[摇篮]'], story: 'none' },
-    { key: 'ke', label: '王逝（南境）', cover: 'https://origin.picgo.net/2026/09/28/60a7b3c7528787365a0b9641693355be4d6a8795fc0d4d41.png',
+    { key: 'ke', label: '王逝（南境）', cover: 'https://origin.picgo.net/2026/09/29/imageb0d7fe894af3e2ff.png',
+      desc: '南境 · KingExit 监狱与龙骑士，序章～最终章。',
       prefixes: ['[KingExit]','[王逝]'], story: '剧情', enable: '剧情.王逝篇', chapter: '剧情.王逝篇章',
       current: '剧情.王逝进度.当前节点', nextNode: '剧情.王逝进度.下一步节点',
       chapters: ['序章','第一章','第二章','第三章','第四章','第五章','第六章','第七章','第八章','最终章'] },
     { key: 'mofuye', label: '魔复夜-无名之城篇', cover: 'https://origin.picgo.net/2026/10/28/699f2e6bd3cb65072995059235366813ebb4bf8fcb52a90c.png',
+      desc: '魔复夜 · 无名之城篇的角色与世界观。',
       prefixes: ['[魔复夜]'], story: 'none' },
   ];
+
+  /* 上一次读世界书的统计（给底部提示用） */
+  const krsPlotRead = { books: 0, entries: 0 };
 
   function krsPlotHelper() {
     const scopes = [window, window.parent, window.top];
@@ -3970,56 +4024,112 @@
     return null;
   }
 
-  async function krsPlotFindBook(TH) {
-    let book = '';
+  /* 一条扩展线真正要看的全部前缀：角色/世界观条目（base）＋ 剧情细纲（prefixes）。
+     旧版只查 prefixes，导致「[クレア][剧情细纲]」这类细纲条目一旦不叫这个名，
+     就算 [クレア] 的人设/语料全都开着，扩展页也一直显示「未启用」。 */
+  function krsLinePrefixes(line) {
+    if (!line) return [];
+    const out = [];
+    (line.base || []).concat(line.prefixes || []).forEach(function (p) {
+      p = String(p || '');
+      if (p && out.indexOf(p) < 0) out.push(p);
+    });
+    return out;
+  }
+
+  function krsEntryLabel(e) {
+    if (!e || typeof e !== 'object') return '';
+    return String(e.comment || e.name || e.title || e.key || '');
+  }
+
+  /* 世界书条目的开关字段各版本不一，逐个兼容 */
+  function krsEntryOn(e) {
+    if (!e || typeof e !== 'object') return false;
+    if (typeof e.enabled === 'boolean') return e.enabled;
+    if (typeof e.enable === 'boolean') return e.enable;
+    if (typeof e.disable === 'boolean') return !e.disable;
+    return false;
+  }
+
+  function krsFlattenEntries(raw) {
+    let entries = raw;
+    if (typeof entries === 'string') { try { entries = JSON.parse(entries); } catch (_) { return []; } }
+    if (entries && !Array.isArray(entries) && entries.entries) entries = entries.entries;
+    if (entries && !Array.isArray(entries) && typeof entries === 'object') entries = Object.values(entries);
+    return Array.isArray(entries) ? entries : [];
+  }
+
+  /* 当前角色挂载的（主 + 附加）+ 全局世界书，全部扫一遍：
+     篇章条目常常被拆到附加书里，只看 primary 会漏。 */
+  async function krsPlotBookNames(TH) {
+    const names = [];
+    const add = function (n) { n = String(n || '').trim(); if (n && names.indexOf(n) < 0) names.push(n); };
     try {
       if (TH && typeof TH.getCharWorldbookNames === 'function') {
-        const n = await Promise.resolve(TH.getCharWorldbookNames('current'));
-        book = String((n && (n.primary || n.name)) || '');
+        const got = await Promise.resolve(TH.getCharWorldbookNames('current'));
+        if (got && typeof got === 'object') {
+          add(got.primary);
+          (Array.isArray(got.additional) ? got.additional : []).forEach(add);
+        } else if (typeof got === 'string') add(got);
       }
     } catch (_) {}
-    if (!book && TH && typeof TH.getWorldbookNames === 'function') {
+    try {
+      if (TH && typeof TH.getGlobalWorldbookNames === 'function') {
+        const g = await Promise.resolve(TH.getGlobalWorldbookNames());
+        if (Array.isArray(g)) g.forEach(add);
+      }
+    } catch (_) {}
+    if (!names.length && TH && typeof TH.getWorldbookNames === 'function') {
       try {
         const all = await Promise.resolve(TH.getWorldbookNames());
-        if (Array.isArray(all)) book = String(all.find(function (n) { return /克蕾雅|克蕾娅|挣扎/.test(String(n)); }) || all[0] || '');
+        if (Array.isArray(all)) all.forEach(add);
       } catch (_) {}
     }
-    return book;
+    return names;
   }
 
   async function krsPlotGetEntries(TH) {
     if (!TH || typeof TH.getWorldbook !== 'function') return null;
-    const book = await krsPlotFindBook(TH);
-    if (!book) return null;
-    try {
-      let entries = await Promise.resolve(TH.getWorldbook(book));
-      if (typeof entries === 'string') { try { entries = JSON.parse(entries); } catch (_) {} }
-      if (entries && !Array.isArray(entries) && entries.entries) entries = entries.entries;
-      if (entries && !Array.isArray(entries) && typeof entries === 'object') entries = Object.values(entries);
-      return Array.isArray(entries) ? entries : null;
-    } catch (_) { return null; }
+    const names = await krsPlotBookNames(TH);
+    if (!names.length) return null;
+    const out = [];
+    for (let i = 0; i < names.length; i++) {
+      try {
+        const raw = await Promise.resolve(TH.getWorldbook(names[i]));
+        krsFlattenEntries(raw).forEach(function (e) { if (e) out.push(e); });
+      } catch (_) {}
+    }
+    krsPlotRead.books = names.length;
+    krsPlotRead.entries = out.length;
+    return out.length ? out : null;
   }
 
   async function krsPlotToggleEntries(prefixes, on) {
     const TH = krsPlotHelper();
-    if (!TH || typeof TH.updateWorldbookWith !== 'function') return false;
-    const book = await krsPlotFindBook(TH);
-    if (!book) return false;
-    try {
-      await TH.updateWorldbookWith(book, function (entries) {
-        return (Array.isArray(entries) ? entries : []).map(function (e) {
-          const c = String((e && (e.comment || e.name)) || '');
-          if (prefixes.some(function (p) { return c.indexOf(p) >= 0; })) {
+    if (!TH || typeof TH.updateWorldbookWith !== 'function') return { ok: false, changed: 0 };
+    const names = await krsPlotBookNames(TH);
+    if (!names.length) return { ok: false, changed: 0 };
+    const list = (Array.isArray(prefixes) ? prefixes : [prefixes]).filter(Boolean);
+    let ok = false;
+    let changed = 0;
+    for (let i = 0; i < names.length; i++) {
+      const book = names[i];
+      try {
+        await Promise.resolve(TH.updateWorldbookWith(book, function (entries) {
+          return krsFlattenEntries(entries).map(function (e) {
+            const c = krsEntryLabel(e);
+            const hit = list.some(function (p) { return c.indexOf(p) >= 0; });
+            if (!hit) return e;
+            if (krsEntryOn(e) !== !!on) changed++;
             return Object.assign({}, e, { enabled: !!on });
-          }
-          return e;
-        });
-      });
-      return true;
-    } catch (e) {
-      console.warn('[剧情] 世界书条目切换失败', e);
-      return false;
+          });
+        }));
+        ok = true;
+      } catch (e) {
+        console.warn('[剧情] 世界书条目切换失败：' + book, e);
+      }
     }
+    return { ok: ok, changed: changed };
   }
 
   function openPlotPanel() {
@@ -4031,11 +4141,19 @@
     modal.innerHTML = '<div class="krs-cg-window krs-plot-window">'
       + '<div class="krs-cg-topbar"><div class="krs-cg-top-title"><span>📖 剧情总览</span></div>'
       + '<button type="button" class="krs-cg-close-btn" id="krs-plot-close">×</button></div>'
+      + '<div class="krs-plot-tabs">'
+      + '<button type="button" class="krs-plot-tab active" data-plot-tab="ext">扩展</button>'
+      + '<button type="button" class="krs-plot-tab" data-plot-tab="story">剧情</button>'
+      + '</div>'
       + '<div class="krs-plot-body" id="krs-plot-body"></div>'
       + '<div class="krs-plot-hint" id="krs-plot-hint"></div></div>';
     document.body.appendChild(modal);
     const hintEl = modal.querySelector('#krs-plot-hint');
     let entries = null;
+    let tab = 'ext';
+
+    const EXTS = KRS_PLOT_LINES;
+    const STORIES = KRS_PLOT_LINES.filter(function (l) { return l.story !== 'none'; });
 
     function lineState(line) {
       const sd = rs() || {};
@@ -4054,27 +4172,41 @@
       return { on: false, chapter: '', stage: '', next: '' };
     }
 
-    function render() {
-      const body = modal.querySelector('#krs-plot-body');
-      if (!body) return;
-      try { body.innerHTML = paintCards(); }
-      catch (err) {
-        console.warn('[剧情] 渲染失败', err);
-        body.innerHTML = '<div class="krs-plot-hint">渲染失败：' + String(err && err.message || err) + '</div>';
-      }
+    function paintTile(line) {
+      const on = !!line._itemsOn;
+      const cover = String(line.cover || '').replace(/["'\\)]/g, function (c) { return encodeURIComponent(c); });
+      return '<button type="button" class="krs-ext-tile' + (on ? ' on' : '') + '" data-ext-key="' + line.key + '"'
+        + ' style="background-image:url(\'' + cover + '\')">'
+        + '<span class="krs-ext-state">' + (on ? '已启用' : '未启用') + '</span>'
+        + '<span class="krs-ext-name"><i>' + (on ? '◆' : '◇') + '</i>' + line.label + '</span>'
+        + '<span class="krs-ext-desc">' + (line.desc || '') + '</span>'
+        + '</button>';
     }
 
-    function paintCards() {
-      return KRS_PLOT_LINES.map(function (line) {
+    function paintExt() {
+      const core = EXTS.filter(function (l) { return !!l.core; });
+      const rest = EXTS.filter(function (l) { return !l.core; });
+      let html = '';
+      if (core.length) {
+        html += '<div class="krs-ext-sec">◆ 本篇 · 常驻主线</div>' + core.map(paintTile).join('');
+      }
+      if (rest.length) {
+        html += '<div class="krs-ext-sec">◆ 联动扩展 · 可与自由模式并存</div>' + rest.map(paintTile).join('');
+      }
+      return html;
+    }
+
+    function paintStory() {
+      return STORIES.map(function (line) {
         const st = lineState(line);
         const open = !!line._open;
-        const idx = line.chapters ? line.chapters.indexOf(st.chapter) : -1;
-        const order = line.chapters ? (idx >= 0 ? (idx + 1) + '/' + line.chapters.length : '—/' + line.chapters.length) : '';
-        const baseOn = !!line._itemsOn || !!st.on;
-        const storyOn = !!line._storyOn;
-        let storyHtml = '';
-        if (line.story !== 'none' && open) {
-          storyHtml = '<div class="krs-plot-story">'
+        const chapters = line.chapters || [];
+        const idx = chapters.indexOf(st.chapter);
+        const order = chapters.length ? (idx >= 0 ? (idx + 1) + '/' + chapters.length : '—/' + chapters.length) : '';
+        const warn = (!line.core && !line._itemsOn)
+          ? '<div class="krs-plot-warn">扩展未启用，请先到「扩展」页开启</div>' : '';
+        const storyHtml = open
+          ? '<div class="krs-plot-story">'
             + '<div class="krs-plot-story-top">'
             + '<span class="krs-plot-chapter-name">' + (st.chapter || '未选章节') + '</span>'
             + '<span class="krs-plot-chapter-order"><button type="button" data-plot-prev="' + line.key + '">‹</button>'
@@ -4083,30 +4215,73 @@
             + '</div>'
             + '<div class="krs-plot-stage"><b>章节阶段</b><span>' + (st.stage || '—') + '</span></div>'
             + '<div class="krs-plot-next"><b>下一步</b><span>' + (st.next || '—') + '</span></div>'
-            + '</div>';
-        }
-        var stateTxt;
-        if (line.core) {
-          stateTxt = (baseOn ? '✓ 本篇条目已启用' : '✗ 本篇条目未启用') + ' · 章节细纲：' + (storyOn ? '已启用' : '未启用');
-        } else {
-          stateTxt = baseOn ? '✓ 已启用本扩展条目' : '✗ 本扩展条目未启用';
-        }
-        var stateCls = (line.core ? storyOn : baseOn) ? '' : ' off';
+            + '</div>'
+          : '';
         return '<div class="krs-plot-card' + (open ? ' open' : '') + '" data-plot-card="' + line.key + '">'
-          + '<button type="button" class="krs-plot-card-head" data-plot-head="' + line.key + '" style="background-image:url(\'' + line.cover + '\')">'
+          + '<button type="button" class="krs-plot-card-head" data-plot-head="' + line.key + '"'
+          + ' style="background-image:url(\'' + line.cover + '\')">'
           + '<span class="krs-plot-card-name">' + line.label + '</span>'
-          + '<span class="krs-plot-card-state">' + (open ? '已展开' : '已收起') + '</span>'
+          + '<span class="krs-plot-card-state">' + (st.on ? '进行中' : '未开启') + '</span>'
           + '<span class="krs-plot-card-arrow">' + (open ? '▾' : '▸') + '</span>'
           + '</button>'
           + '<div class="krs-plot-card-body">'
-          + '<div class="krs-plot-enabled' + stateCls + '"><span>' + stateTxt + '</span>'
-          + (line.story !== 'none'
-              ? '<button type="button" class="krs-plot-close-story" data-plot-close-story="' + line.key + '">' + (st.on ? '关闭剧情' : '开启剧情') + '</button>'
-              : '')
-          + '</div>'
-          + storyHtml
+          + '<div class="krs-plot-enabled' + (st.on ? '' : ' off') + '"><span>'
+          + (st.on ? '✓ 剧情已开启' : '✗ 剧情未开启') + '</span>'
+          + '<button type="button" class="krs-plot-close-story" data-plot-close-story="' + line.key + '">'
+          + (st.on ? '关闭剧情' : '开启剧情') + '</button></div>'
+          + warn + storyHtml
           + '</div></div>';
       }).join('');
+    }
+
+    function render() {
+      const body = modal.querySelector('#krs-plot-body');
+      if (!body) return;
+      modal.querySelectorAll('[data-plot-tab]').forEach(function (b) {
+        b.classList.toggle('active', b.getAttribute('data-plot-tab') === tab);
+      });
+      body.className = 'krs-plot-body ' + (tab === 'ext' ? 'grid-ext' : 'grid-story');
+      try { body.innerHTML = (tab === 'ext') ? paintExt() : paintStory(); }
+      catch (err) {
+        console.warn('[剧情] 渲染失败', err);
+        body.innerHTML = '<div class="krs-plot-hint">渲染失败：' + String(err && err.message || err) + '</div>';
+      }
+    }
+
+    /* 剧情页默认展开：扩展已启用的线自动展开 */
+    function applyDefaultOpen() {
+      STORIES.forEach(function (line) {
+        line._open = !!line._itemsOn || !!lineState(line).on;
+      });
+    }
+
+    async function refreshEntryState() {
+      const TH = krsPlotHelper();
+      entries = await krsPlotGetEntries(TH);
+      KRS_PLOT_LINES.forEach(function (line) {
+        const all = krsLinePrefixes(line);
+        const bases = (line.base || []).filter(function (p) { return p; });
+        const hit = function (pre, needOn) {
+          return (entries || []).some(function (e) {
+            return krsEntryLabel(e).indexOf(pre) >= 0 && (!needOn || krsEntryOn(e));
+          });
+        };
+        /* 有「角色/世界观条目」这一档的篇章（本篇、迷宫）：只要书里确实存在这类条目，
+           就用它判定启用——剧情细纲只是附录，不该反过来代表整个篇章。 */
+        const hasBase = entries ? bases.some(function (p) { return hit(p, false); }) : false;
+        const pres = hasBase ? bases : all;
+        const on = entries ? pres.some(function (p) { return hit(p, true); }) : false;
+        line._storyOn = on;
+        line._itemsOn = on;
+      });
+      return entries;
+    }
+
+    /* 底部提示：把「读了几本 / 几条 / 命中几个」摊开，方便一眼核对 */
+    function extSummary() {
+      const on = KRS_PLOT_LINES.filter(function (l) { return !!l._itemsOn; }).length;
+      return '世界书 ' + krsPlotRead.books + ' 本 · ' + krsPlotRead.entries + ' 条　｜　扩展已启用 '
+        + on + ' / ' + KRS_PLOT_LINES.length;
     }
 
     async function clearStoryVars(line) {
@@ -4152,69 +4327,68 @@
       });
     }
 
-    async function enableEntries(line, on) {
-      const ok = await krsPlotToggleEntries(line.prefixes, on);
-      if (ok) line._storyOn = on;
-      return ok;
+    async function toggleExt(line) {
+      const next = !line._itemsOn;
+      const pres = krsLinePrefixes(line);
+      const r = await krsPlotToggleEntries(pres, next);
+      if (r.ok && r.changed) line._itemsOn = next;
+      if (!next && r.ok && line.story !== 'none') await clearStoryVars(line);
+      if (hintEl) {
+        hintEl.textContent = !r.ok
+          ? '世界书接口不可用：条目未能同步开关。'
+          : (!r.changed
+            ? '「' + line.label + '」没有匹配到条目（前缀 ' + pres.slice(0, 2).join(' / ') + '），世界书没有改动。'
+            : next
+              ? '已启用「' + line.label + '」：' + r.changed + ' 条世界书条目已打开。'
+              : '已关闭「' + line.label + '」：' + r.changed + ' 条条目已关闭'
+                + (line.story !== 'none' ? '，其剧情变量已清空。' : '。'));
+      }
+      try { renderAll(); } catch (_) {}
+      render();
     }
 
-    async function toggleCard(line) {
-      const next = !line._open;
-      let ok = true;
+    async function openStory(line) {
+      if (!line.core && !line._itemsOn) {
+        if (hintEl) hintEl.textContent = '「' + line.label + '」扩展未启用，请先到「扩展」页开启。';
+        return;
+      }
       if (line.core) {
-        /* 核心线：人设条目常开，只开关「剧情细纲」 */
-        ok = await enableEntries(line, next);
-      } else {
-        ok = await krsPlotToggleEntries(line.prefixes, next);
-        if (ok) line._itemsOn = next;
+        await krsPlotToggleEntries(line.prefixes, true);
+        await refreshEntryState();
       }
-      line._open = next;
-      if (!next && line.story !== 'none') await clearStoryVars(line);
-      if (hintEl) {
-        if (!ok) hintEl.textContent = '世界书接口不可用：条目未能同步开关。';
-        else hintEl.textContent = next
-          ? (line.core ? '已启用本篇剧情细纲（剧情未开启，点「开启剧情」才会注入）。' : '已启用扩展条目（剧情未开启，点「开启剧情」才会注入）。')
-          : '已关闭条目，并清空了该线剧情变量。';
-      }
+      line._open = true;
+      await applyStory(line, line.chapters[0]);
+      if (hintEl) hintEl.textContent = '「' + line.label + '」剧情已开启：等待<user>前往触发' + line.chapters[0] + '。';
       try { renderAll(); } catch (_) {}
       render();
     }
 
     async function closeStory(line) {
       await clearStoryVars(line);
-      /* 核心线：人设常开，关闭剧情 = 关掉它的剧情细纲
-         扩展线：条目（人设/语料/势力…）保持启用，只清空剧情变量 */
-      await enableEntries(line, !line.core);
-      if (hintEl) hintEl.textContent = line.core
-        ? '剧情已关闭：变量已清空，本篇剧情细纲已关闭，不再注入。'
-        : '剧情已关闭：变量已清空，扩展条目保持启用，不再注入剧情提示词。';
-      try { renderAll(); } catch (_) {}
-      render();
-    }
-
-    async function openStory(line) {
-      await enableEntries(line, true);
-      if (!line.core) {
-        const ok = await krsPlotToggleEntries(line.prefixes, true);
-        if (ok) line._itemsOn = true;
+      if (line.core) {
+        await krsPlotToggleEntries(line.prefixes, false);
+        await refreshEntryState();
       }
-      if (!line._open) line._open = true;
-      await applyStory(line, line.chapters[0]);
-      if (hintEl) hintEl.textContent = '剧情已开启：等待<user>前往触发第一章。';
+      if (hintEl) hintEl.textContent = line.core
+        ? '「' + line.label + '」剧情已关闭：变量已清空，剧情细纲已关闭。'
+        : '「' + line.label + '」剧情已关闭：变量已清空，扩展条目保持启用。';
       try { renderAll(); } catch (_) {}
       render();
     }
 
     async function stepChapter(line, dir) {
-      const st = lineState(line);
       const chapters = line.chapters || [];
       if (!chapters.length) return;
-      await enableEntries(line, true);
-      if (!line.core) {
-        const ok = await krsPlotToggleEntries(line.prefixes, true);
-        if (ok) line._itemsOn = true;
+      if (!line.core && !line._itemsOn) {
+        if (hintEl) hintEl.textContent = '「' + line.label + '」扩展未启用，请先到「扩展」页开启。';
+        return;
+      }
+      if (line.core) {
+        await krsPlotToggleEntries(line.prefixes, true);
+        await refreshEntryState();
       }
       line._open = true;
+      const st = lineState(line);
       let idx = chapters.indexOf(st.chapter);
       if (idx < 0) idx = 0;
       const target = st.chapter ? Math.max(0, Math.min(chapters.length - 1, idx + dir)) : 0;
@@ -4225,6 +4399,25 @@
 
     modal.addEventListener('click', async function (ev) {
       if (ev.target === modal || ev.target.closest('#krs-plot-close')) { modal.remove(); return; }
+
+      const tabBtn = ev.target.closest('[data-plot-tab]');
+      if (tabBtn) {
+        const next = tabBtn.getAttribute('data-plot-tab');
+        if (next === tab) return;
+        tab = next;
+        await refreshEntryState();
+        if (tab === 'story') applyDefaultOpen();
+        render();
+        return;
+      }
+
+      const ext = ev.target.closest('[data-ext-key]');
+      if (ext) {
+        const line = KRS_PLOT_LINES.find(function (x) { return x.key === ext.getAttribute('data-ext-key'); });
+        if (line) await toggleExt(line);
+        return;
+      }
+
       const closeBtn = ev.target.closest('[data-plot-close-story]');
       if (closeBtn) {
         const line = KRS_PLOT_LINES.find(function (x) { return x.key === closeBtn.getAttribute('data-plot-close-story'); });
@@ -4234,12 +4427,14 @@
         }
         return;
       }
+
       const head = ev.target.closest('[data-plot-head]');
       if (head) {
         const line = KRS_PLOT_LINES.find(function (x) { return x.key === head.getAttribute('data-plot-head'); });
-        if (line) await toggleCard(line);
+        if (line) { line._open = !line._open; render(); }
         return;
       }
+
       const p = ev.target.closest('[data-plot-prev]');
       const n = ev.target.closest('[data-plot-next]');
       if (p || n) {
@@ -4249,22 +4444,12 @@
     });
 
     (async function () {
-      const TH = krsPlotHelper();
-      entries = await krsPlotGetEntries(TH);
-      KRS_PLOT_LINES.forEach(function (line) {
-        const hit = function (pre) {
-          return (entries || []).some(function (e) {
-            const c = String((e && (e.comment || e.name)) || '');
-            return c.indexOf(pre) >= 0 && !!e.enabled;
-          });
-        };
-        const storyOn = entries ? line.prefixes.some(hit) : false;
-        const baseOn = entries ? (line.base ? line.base.some(hit) : storyOn) : false;
-        line._storyOn = storyOn;
-        line._itemsOn = baseOn;
-        line._open = baseOn;
-      });
-      if (!entries && hintEl) hintEl.textContent = '未找到世界书接口：本面板只能切换剧情变量，无法同步条目开关。';
+      await refreshEntryState();
+      if (hintEl) {
+        hintEl.textContent = entries
+          ? extSummary()
+          : '未找到世界书接口：本面板只能切换剧情变量，无法同步条目开关。';
+      }
       render();
     })();
   }
