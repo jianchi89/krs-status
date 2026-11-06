@@ -2037,7 +2037,7 @@
   }
 
   function safeGet(obj, path, def) {
-    if (!obj) return def;
+    if (!obj || typeof path !== 'string' || !path) return def;
     const parts = path.split('.');
     let curr = obj;
     for (const p of parts) {
@@ -3922,6 +3922,16 @@
   
   /* ── 剧情总览：扩展条目开关 + 剧情控制器 ── */
   const KRS_PLOT_LINES = [
+    { key: 'kl', label: '克蕾雅篇（本篇）', core: true,
+      cover: 'https://origin.picgo.net/2026/09/17/ac92bf314de5fc2fb6488b395a70a66e25515781bb8ce916.png',
+      base: ['[クレア]'], prefixes: ['[クレア][剧情细纲]'], story: '剧情', enable: '剧情.克蕾雅篇', chapter: '剧情.克蕾雅篇章',
+      current: '剧情.克蕾雅进度.当前节点', nextNode: '剧情.克蕾雅进度.下一步节点',
+      chapters: ['序章','第一章','第二章','第三章','第四章','第五章','第六章','第七章','第八章','第九章','第十章'] },
+    { key: 'lab', label: '伊莉丝篇（迷宫都市）', core: true,
+      cover: 'https://origin.picgo.net/2026/09/19/d1e3701a4b70c450df76c7be4db7a226dff0f9fc5cf83559.png',
+      base: ['[迷宫]'], prefixes: ['[迷宫][剧情细纲]'], story: '剧情', enable: '剧情.伊莉丝篇', chapter: '剧情.伊莉丝篇章',
+      current: '剧情.伊莉丝进度.当前节点', nextNode: '剧情.伊莉丝进度.下一步节点',
+      chapters: ['序章','第一章','第二章','第三章','第四章','第五章','第六章','第七章','第八章','第九章'] },
     { key: 'yw', label: '勇战（圣特拉）', cover: 'https://origin.picgo.net/2026/10/28/image18c3700954ce68b0.png',
       prefixes: ['[勇战]'], story: '事件', event: '世界.事件.勇战-主线',
       role: '勇战-主线：鲁卡、艾丽丝、伊莉娅丝与七勇者击败梦之主，关闭夜之国',
@@ -4031,12 +4041,7 @@
       const sd = rs() || {};
       if (line.story === '事件') {
         const ev = safeGet(sd, line.event, null) || {};
-        return {
-          on: ev.状态 === '进行中',
-          chapter: ev.阶段 || '',
-          stage: ev.阶段目标 || '',
-          next: ev.背景描述 || ''
-        };
+        return { on: ev.状态 === '进行中', chapter: ev.阶段 || '', stage: ev.阶段目标 || '', next: ev.背景描述 || '' };
       }
       if (line.story === '剧情') {
         return {
@@ -4052,12 +4057,21 @@
     function render() {
       const body = modal.querySelector('#krs-plot-body');
       if (!body) return;
-      body.innerHTML = KRS_PLOT_LINES.map(function (line) {
+      try { body.innerHTML = paintCards(); }
+      catch (err) {
+        console.warn('[剧情] 渲染失败', err);
+        body.innerHTML = '<div class="krs-plot-hint">渲染失败：' + String(err && err.message || err) + '</div>';
+      }
+    }
+
+    function paintCards() {
+      return KRS_PLOT_LINES.map(function (line) {
         const st = lineState(line);
         const open = !!line._open;
         const idx = line.chapters ? line.chapters.indexOf(st.chapter) : -1;
         const order = line.chapters ? (idx >= 0 ? (idx + 1) + '/' + line.chapters.length : '—/' + line.chapters.length) : '';
-        const entriesOn = !!line._entriesOn || (line.story !== 'none' && st.on);
+        const baseOn = !!line._itemsOn || !!st.on;
+        const storyOn = !!line._storyOn;
         let storyHtml = '';
         if (line.story !== 'none' && open) {
           storyHtml = '<div class="krs-plot-story">'
@@ -4071,6 +4085,13 @@
             + '<div class="krs-plot-next"><b>下一步</b><span>' + (st.next || '—') + '</span></div>'
             + '</div>';
         }
+        var stateTxt;
+        if (line.core) {
+          stateTxt = (baseOn ? '✓ 本篇条目已启用' : '✗ 本篇条目未启用') + ' · 章节细纲：' + (storyOn ? '已启用' : '未启用');
+        } else {
+          stateTxt = baseOn ? '✓ 已启用本扩展条目' : '✗ 本扩展条目未启用';
+        }
+        var stateCls = (line.core ? storyOn : baseOn) ? '' : ' off';
         return '<div class="krs-plot-card' + (open ? ' open' : '') + '" data-plot-card="' + line.key + '">'
           + '<button type="button" class="krs-plot-card-head" data-plot-head="' + line.key + '" style="background-image:url(\'' + line.cover + '\')">'
           + '<span class="krs-plot-card-name">' + line.label + '</span>'
@@ -4078,84 +4099,108 @@
           + '<span class="krs-plot-card-arrow">' + (open ? '▾' : '▸') + '</span>'
           + '</button>'
           + '<div class="krs-plot-card-body">'
-          + '<div class="krs-plot-enabled' + (entriesOn ? '' : ' off') + '"><span>' + (entriesOn ? '✓ 已启用本扩展条目' : '✗ 本扩展条目未启用') + '</span>'
-          + (line.story !== 'none' ? '<button type="button" class="krs-plot-close-story" data-plot-close-story="' + line.key + '">' + (st.on ? '关闭剧情' : '开启剧情') + '</button>' : '')
+          + '<div class="krs-plot-enabled' + stateCls + '"><span>' + stateTxt + '</span>'
+          + (line.story !== 'none'
+              ? '<button type="button" class="krs-plot-close-story" data-plot-close-story="' + line.key + '">' + (st.on ? '关闭剧情' : '开启剧情') + '</button>'
+              : '')
           + '</div>'
           + storyHtml
           + '</div></div>';
       }).join('');
     }
 
-    async function applyStory(line, on, chapter) {
+    async function clearStoryVars(line) {
       await mutateMvuStat(function (r) {
         if (line.story === '剧情') {
-          safeSet(r, line.enable, !!on);
-          if (on) safeSet(r, line.chapter, chapter || line.chapters[0]);
+          safeSet(r, line.enable, false);
+          safeSet(r, line.chapter, '');
+          if (line.current) safeSet(r, line.current, '');
+          if (line.nextNode) safeSet(r, line.nextNode, '');
           return;
         }
         if (line.story !== '事件') return;
-        let ev = safeGet(r, line.event, null);
-        if (!on) {
-          if (ev) safeSet(r, line.event + '.状态', '悬置');
+        const key = line.event.split('.').pop();
+        const events = safeGet(r, '世界.事件', null);
+        if (events && typeof events === 'object' && Object.prototype.hasOwnProperty.call(events, key)) delete events[key];
+      });
+    }
+
+    async function applyStory(line, chapter) {
+      const ch = chapter || (line.chapters ? line.chapters[0] : '');
+      const stageText = '等待<user>前往触发：' + ch;
+      const nextText = '本章尚未开始；由<user>决定何时进入。';
+      await mutateMvuStat(function (r) {
+        if (line.story === '剧情') {
+          safeSet(r, line.enable, true);
+          safeSet(r, line.chapter, ch);
+          if (line.current) safeSet(r, line.current, stageText);
+          if (line.nextNode) safeSet(r, line.nextNode, nextText);
           return;
         }
+        if (line.story !== '事件') return;
+        const ev = safeGet(r, line.event, null);
         if (!ev) {
-          ev = { 类型: '命运', 状态: '进行中', 角色与任务: line.role,
-            阶段: chapter || line.chapters[0], 阶段目标: '等待<user>前往触发：' + (chapter || line.chapters[0]), 背景描述: '本章尚未开始；由<user>决定何时进入。', 内容: '等待<user>前往触发' };
-          safeSet(r, line.event, ev);
-        } else {
-          safeSet(r, line.event + '.状态', '进行中');
-          if (chapter) safeSet(r, line.event + '.阶段', chapter);
-          else if (!ev.阶段 || line.chapters.indexOf(ev.阶段) < 0) safeSet(r, line.event + '.阶段', line.chapters[0]);
+          safeSet(r, line.event, { 类型: '命运', 状态: '进行中', 角色与任务: line.role,
+            阶段: ch, 阶段目标: stageText, 背景描述: nextText, 内容: '等待<user>前往触发' });
+          return;
         }
+        safeSet(r, line.event + '.状态', '进行中');
+        safeSet(r, line.event + '.阶段', ch);
+        safeSet(r, line.event + '.阶段目标', stageText);
+        safeSet(r, line.event + '.背景描述', nextText);
+        safeSet(r, line.event + '.内容', '等待<user>前往触发');
       });
+    }
+
+    async function enableEntries(line, on) {
+      const ok = await krsPlotToggleEntries(line.prefixes, on);
+      if (ok) line._storyOn = on;
+      return ok;
     }
 
     async function toggleCard(line) {
       const next = !line._open;
-      const ok = await krsPlotToggleEntries(line.prefixes, next);
-      if (line.story !== 'none') {
-        const st = lineState(line);
-        await applyStory(line, next, st.chapter || (line.chapters ? line.chapters[0] : ''));
+      let ok = true;
+      if (line.core) {
+        /* 核心线：人设条目常开，只开关「剧情细纲」 */
+        ok = await enableEntries(line, next);
+      } else {
+        ok = await krsPlotToggleEntries(line.prefixes, next);
+        if (ok) line._itemsOn = next;
       }
       line._open = next;
-      if (ok) line._entriesOn = next;
-      if (!ok && hintEl) hintEl.textContent = '世界书接口不可用：只切换了剧情变量，条目未能同步开关。';
+      if (!next && line.story !== 'none') await clearStoryVars(line);
+      if (hintEl) {
+        if (!ok) hintEl.textContent = '世界书接口不可用：条目未能同步开关。';
+        else hintEl.textContent = next
+          ? (line.core ? '已启用本篇剧情细纲（剧情未开启，点「开启剧情」才会注入）。' : '已启用扩展条目（剧情未开启，点「开启剧情」才会注入）。')
+          : '已关闭条目，并清空了该线剧情变量。';
+      }
       try { renderAll(); } catch (_) {}
       render();
     }
 
     async function closeStory(line) {
-      await mutateMvuStat(function (r) {
-        if (line.story === '剧情') {
-          safeSet(r, line.enable, false);
-          safeSet(r, line.chapter, '');
-          safeSet(r, line.current, '');
-          safeSet(r, line.nextNode, '');
-        } else if (line.story === '事件') {
-          const key = line.event.split('.').pop();
-          const events = safeGet(r, '世界.事件', null);
-          if (events && typeof events === 'object' && Object.prototype.hasOwnProperty.call(events, key)) {
-            delete events[key];
-          }
-        }
-      });
-      /* 关闭剧情 = 只清剧情变量；扩展条目保持启用 */
-      const ok = await krsPlotToggleEntries(line.prefixes, true);
-      line._open = true;
-      if (ok) line._entriesOn = true;
-      if (hintEl) hintEl.textContent = ok
-        ? '剧情变量已清空；扩展条目保持启用，对应 EJS 已停止注入。'
-        : '剧情变量已清空；世界书接口不可用，条目状态未变。';
+      await clearStoryVars(line);
+      /* 核心线：人设常开，关闭剧情 = 关掉它的剧情细纲
+         扩展线：条目（人设/语料/势力…）保持启用，只清空剧情变量 */
+      await enableEntries(line, !line.core);
+      if (hintEl) hintEl.textContent = line.core
+        ? '剧情已关闭：变量已清空，本篇剧情细纲已关闭，不再注入。'
+        : '剧情已关闭：变量已清空，扩展条目保持启用，不再注入剧情提示词。';
       try { renderAll(); } catch (_) {}
       render();
     }
 
     async function openStory(line) {
-      const ok = await krsPlotToggleEntries(line.prefixes, true);
-      line._open = true;
-      if (ok) line._entriesOn = true;
-      await applyStory(line, true, line.chapters[0]);
+      await enableEntries(line, true);
+      if (!line.core) {
+        const ok = await krsPlotToggleEntries(line.prefixes, true);
+        if (ok) line._itemsOn = true;
+      }
+      if (!line._open) line._open = true;
+      await applyStory(line, line.chapters[0]);
+      if (hintEl) hintEl.textContent = '剧情已开启：等待<user>前往触发第一章。';
       try { renderAll(); } catch (_) {}
       render();
     }
@@ -4164,14 +4209,16 @@
       const st = lineState(line);
       const chapters = line.chapters || [];
       if (!chapters.length) return;
-      const wasOpen = !!line._open;
+      await enableEntries(line, true);
+      if (!line.core) {
+        const ok = await krsPlotToggleEntries(line.prefixes, true);
+        if (ok) line._itemsOn = true;
+      }
+      line._open = true;
       let idx = chapters.indexOf(st.chapter);
       if (idx < 0) idx = 0;
-      const ok = await krsPlotToggleEntries(line.prefixes, true);
-      if (ok) line._entriesOn = true;
-      line._open = true;
-      const target = (wasOpen && st.chapter) ? Math.max(0, Math.min(chapters.length - 1, idx + dir)) : 0;
-      await applyStory(line, true, chapters[target]);
+      const target = st.chapter ? Math.max(0, Math.min(chapters.length - 1, idx + dir)) : 0;
+      await applyStory(line, chapters[target]);
       try { renderAll(); } catch (_) {}
       render();
     }
@@ -4205,16 +4252,17 @@
       const TH = krsPlotHelper();
       entries = await krsPlotGetEntries(TH);
       KRS_PLOT_LINES.forEach(function (line) {
-        let entriesOn = false;
-        if (entries) {
-          entriesOn = entries.some(function (e) {
+        const hit = function (pre) {
+          return (entries || []).some(function (e) {
             const c = String((e && (e.comment || e.name)) || '');
-            return line.prefixes.some(function (p) { return c.indexOf(p) >= 0; }) && !!e.enabled;
+            return c.indexOf(pre) >= 0 && !!e.enabled;
           });
-        }
-        line._entriesOn = entriesOn;
-        const st = lineState(line);
-        line._open = entriesOn || !!st.on;
+        };
+        const storyOn = entries ? line.prefixes.some(hit) : false;
+        const baseOn = entries ? (line.base ? line.base.some(hit) : storyOn) : false;
+        line._storyOn = storyOn;
+        line._itemsOn = baseOn;
+        line._open = baseOn;
       });
       if (!entries && hintEl) hintEl.textContent = '未找到世界书接口：本面板只能切换剧情变量，无法同步条目开关。';
       render();
