@@ -4079,7 +4079,7 @@
           + '</button>'
           + '<div class="krs-plot-card-body">'
           + '<div class="krs-plot-enabled' + (entriesOn ? '' : ' off') + '"><span>' + (entriesOn ? '✓ 已启用本扩展条目' : '✗ 本扩展条目未启用') + '</span>'
-          + (line.story !== 'none' ? '<button type="button" class="krs-plot-close-story" data-plot-close-story="' + line.key + '">关闭剧情</button>' : '')
+          + (line.story !== 'none' ? '<button type="button" class="krs-plot-close-story" data-plot-close-story="' + line.key + '">' + (st.on ? '关闭剧情' : '开启剧情') + '</button>' : '')
           + '</div>'
           + storyHtml
           + '</div></div>';
@@ -4101,7 +4101,7 @@
         }
         if (!ev) {
           ev = { 类型: '命运', 状态: '进行中', 角色与任务: line.role,
-            阶段: chapter || line.chapters[0], 阶段目标: '', 背景描述: '', 内容: '手动开启' };
+            阶段: chapter || line.chapters[0], 阶段目标: '等待<user>前往触发：' + (chapter || line.chapters[0]), 背景描述: '本章尚未开始；由<user>决定何时进入。', 内容: '等待<user>前往触发' };
           safeSet(r, line.event, ev);
         } else {
           safeSet(r, line.event + '.状态', '进行中');
@@ -4133,20 +4133,29 @@
           safeSet(r, line.current, '');
           safeSet(r, line.nextNode, '');
         } else if (line.story === '事件') {
-          const ev = safeGet(r, line.event, null);
-          if (ev) {
-            safeSet(r, line.event + '.状态', '悬置');
-            safeSet(r, line.event + '.阶段', '');
-            safeSet(r, line.event + '.阶段目标', '');
-            safeSet(r, line.event + '.背景描述', '');
-            safeSet(r, line.event + '.内容', '');
+          const key = line.event.split('.').pop();
+          const events = safeGet(r, '世界.事件', null);
+          if (events && typeof events === 'object' && Object.prototype.hasOwnProperty.call(events, key)) {
+            delete events[key];
           }
         }
       });
-      const ok = await krsPlotToggleEntries(line.prefixes, false);
-      line._open = false;
-      line._entriesOn = false;
-      if (!ok && hintEl) hintEl.textContent = '剧情变量已清空；世界书条目未能同步关闭（接口不可用）。';
+      /* 关闭剧情 = 只清剧情变量；扩展条目保持启用 */
+      const ok = await krsPlotToggleEntries(line.prefixes, true);
+      line._open = true;
+      if (ok) line._entriesOn = true;
+      if (hintEl) hintEl.textContent = ok
+        ? '剧情变量已清空；扩展条目保持启用，对应 EJS 已停止注入。'
+        : '剧情变量已清空；世界书接口不可用，条目状态未变。';
+      try { renderAll(); } catch (_) {}
+      render();
+    }
+
+    async function openStory(line) {
+      const ok = await krsPlotToggleEntries(line.prefixes, true);
+      line._open = true;
+      if (ok) line._entriesOn = true;
+      await applyStory(line, true, line.chapters[0]);
       try { renderAll(); } catch (_) {}
       render();
     }
@@ -4172,7 +4181,10 @@
       const closeBtn = ev.target.closest('[data-plot-close-story]');
       if (closeBtn) {
         const line = KRS_PLOT_LINES.find(function (x) { return x.key === closeBtn.getAttribute('data-plot-close-story'); });
-        if (line) await closeStory(line);
+        if (line) {
+          const st = lineState(line);
+          if (st.on) await closeStory(line); else await openStory(line);
+        }
         return;
       }
       const head = ev.target.closest('[data-plot-head]');

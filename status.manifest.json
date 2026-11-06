@@ -1,7 +1,7 @@
 {
     "schema":  1,
-    "version":  "4.1.0",
+    "version":  "4.1.1",
     "html":  "status.html",
-    "sha256":  "617dfb6ac9ec66046ec50bd7e44fdee4d49dbda74bb7078bc6bfb0315dc85b06",
-    "updatedAt":  "2026-11-05T21:11:51Z"
+    "sha256":  "c5c9ea54a41130578c237e28583de026f13e276e8ce7d045350dc81d49254449",
+    "updatedAt":  "2026-11-06T06:05:58Z"
 }
