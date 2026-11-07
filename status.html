@@ -98,13 +98,14 @@
                   <span class="krs-dash-val gold hero-gold-text" data-krs-edit="user.金币" data-krs-label="个人金币" data-krs-type="number">0 G</span>
                 </div>
                 <div class="krs-dash-box">
-                  <span class="krs-dash-title">🌌 因果律刻印</span>
-                  <span class="krs-dash-val purple hero-causality-text">Lv.1 (5层)</span>
-                </div>
-                <div class="krs-dash-box">
                   <span class="krs-dash-title">📍 驻留地理</span>
                   <span class="krs-dash-val cyan hero-loc-text">--</span>
                 </div>
+                <button type="button" class="krs-dash-box krs-lang-switch" id="krs-lang-switch" data-mode=""
+                        title="点击切换对白格式世界书（纯中文 / 中日双语）">
+                  <span class="krs-dash-title">🌐 点击切换双语</span>
+                  <span class="krs-lang-text">--</span>
+                </button>
               </div>
             </div>
 
@@ -396,8 +397,32 @@
 /* ================= 1. 主角核心卡 ================= */
 .hero-split-layout { display: flex; flex-direction: column; gap: 12px; }
 .krs-user-mode-card {
+  position: relative;
   background: var(--card-bg); border: 1px solid rgba(var(--theme-rgb), 0.35);
   border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0;
+}
+/* ── 对白格式开关：作为金库那一排的一格，替换原来的「因果律刻印」 ── */
+.krs-lang-switch {
+  font-family: inherit; text-align: left; cursor: pointer; color: inherit;
+  transition: border-color .18s ease, background .18s ease, transform .18s ease;
+}
+.krs-lang-switch:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.15);
+}
+.krs-lang-switch .krs-lang-text { font-size: 13.5px; font-weight: 700; color: #fff; white-space: nowrap; }
+/* 按状态只改边框色：纯中文=淡绿，中日双语=蓝（背景保持原样） */
+.krs-lang-switch[data-mode="zh"] { border-color: rgba(94, 226, 156, .6) !important; }
+.krs-lang-switch[data-mode="zh"] .krs-lang-text { color: #9fe3b1; }
+.krs-lang-switch[data-mode="ja"] { border-color: rgba(96, 165, 250, .65) !important; }
+.krs-lang-switch[data-mode="ja"] .krs-lang-text { color: #a9cbff; }
+.krs-lang-switch[data-mode="err"] { border-color: rgba(255, 120, 120, .55) !important; }
+.krs-lang-switch[data-mode="err"] .krs-lang-text { color: #ff9d9d; font-size: 11px; }
+.krs-lang-switch.busy { opacity: .6; pointer-events: none; }
+@media (max-width: 700px) {
+  .krs-u-right-pack { width: 100%; }
+  .krs-u-dash-pills { align-self: flex-start; }
+  .krs-lang-switch { align-self: flex-end; }
 }
 .krs-u-top-row {
   display: flex; justify-content: space-between; align-items: center;
@@ -2379,9 +2404,13 @@
     root.querySelector('.hero-gold-text').textContent = `${safeGet(sd, 'user.金币', 0)} G`;
     root.querySelector('.hero-loc-text').textContent = safeGet(sd, '世界.地点', '无');
 
-    const clv = safeGet(sd, '世界.因果律.等级', 1);
-    const cTower = safeGet(sd, '世界.因果律.塔层', 5);
-    root.querySelector('.hero-causality-text').textContent = `Lv.${clv} (${cTower}层)`;
+    /* v4.1.4：因果律刻印那格已换成「对白双语开关」，元素可能不存在，做空值保护 */
+    const casEl = root.querySelector('.hero-causality-text');
+    if (casEl) {
+      const clv = safeGet(sd, '世界.因果律.等级', 1);
+      const cTower = safeGet(sd, '世界.因果律.塔层', 5);
+      casEl.textContent = `Lv.${clv} (${cTower}层)`;
+    }
 
     const uAccept = Math.min(200, Math.max(0, parseInt(safeGet(sd, 'user.世界接纳度', 0)) || 0));
     root.querySelector('.hero-accept-num').textContent = `${uAccept}/200`;
@@ -4132,6 +4161,181 @@
     return { ok: ok, changed: changed };
   }
 
+  /* ── 对白格式开关 ──────────────────────────────────────────────
+     两条「对话输出格式」都没有关键词（无 key），所以「非常驻」的那条永远不触发，
+     只有 constant=true（常驻）的那条真正生效。于是只有两个有效状态：
+
+       ① 中文条目常驻 → 只有中文格式生效 → 输出「纯中文」
+          按钮显示：纯中文
+       ② 日文条目常驻 → 只有日文格式生效 → 输出「日语 + 中文翻译」
+          按钮显示：中日双语
+
+     两条条目始终 enabled=true，只切换谁 constant。
+     ──────────────────────────────────────────────────────────── */
+  const KRS_LANG_PREFIX = { zh: '[中文-对白美化]', ja: '[日文-对白美化]' };
+  const KRS_LANG_LABEL = {
+    zh: '纯中文',
+    ja: '中日双语',
+  };
+  const KRS_LANG_TIP = {
+    zh: '当前：中文格式常驻 → 只输出中文（点击切到中日双语）',
+    ja: '当前：日文格式常驻 → 输出日语 + 中文翻译（点击切到纯中文）',
+  };
+  let krsLangBusy = false;
+
+  /* 世界书条目的「常驻」在酒馆助手里是 strategy.type === 'constant'，
+     不是顶层 constant 字段。写入时 eH() 只认 strategy.type，
+     顶层 constant 会被忽略 —— 这就是之前「写入成功但状态没变」的原因。 */
+  function krsEntryIsConstant(e) {
+    if (!e || typeof e !== 'object') return false;
+    const st = e.strategy;
+    if (st && typeof st === 'object' && typeof st.type === 'string') return st.type === 'constant';
+    return !!e.constant; /* 兼容旧实现 / 测试桩 */
+  }
+
+  /* 生成「常驻 / 非常驻」的条目副本；其余字段（关键词、位置、内容…）原样保留 */
+  function krsEntryWithConstant(e, on) {
+    const out = Object.assign({}, e);
+    const st = (e && e.strategy && typeof e.strategy === 'object') ? Object.assign({}, e.strategy) : {};
+    const wasVectorized = st.type === 'vectorized';
+    st.type = on ? 'constant' : (wasVectorized ? 'vectorized' : 'selective');
+    out.strategy = st;
+    out.constant = on;   /* 兼容只认顶层字段的旧版本 */
+    out.enabled = true;  /* 两条始终启用 */
+    return out;
+  }
+
+  async function krsLangScan() {
+    const res = { found: false, zhGreen: false, jaGreen: false };
+    const TH = krsPlotHelper();
+    if (!TH || typeof TH.getWorldbook !== 'function') return res;
+    const names = await krsPlotBookNames(TH);
+    for (let i = 0; i < names.length; i++) {
+      let raw = null;
+      try { raw = await Promise.resolve(TH.getWorldbook(names[i])); } catch (_) { continue; }
+      krsFlattenEntries(raw).forEach(function (e) {
+        const c = krsEntryLabel(e);
+        const green = krsEntryOn(e) && krsEntryIsConstant(e);
+        if (c.indexOf(KRS_LANG_PREFIX.zh) >= 0) { res.found = true; if (green) res.zhGreen = true; }
+        if (c.indexOf(KRS_LANG_PREFIX.ja) >= 0) { res.found = true; if (green) res.jaGreen = true; }
+      });
+    }
+    return res;
+  }
+
+  /* 绿灯那条就是「主」；两条都绿、或都没绿时，默认归到中文绿 */
+  function krsLangModeOf(r) {
+    if (!r.found) return '';
+    return (r.jaGreen && !r.zhGreen) ? 'ja' : 'zh';
+  }
+
+  /* 写入并回读校验：依次尝试几种可能的接口，最后以「回读到的状态」为准。
+     不同版本的酒馆助手对角色世界书的写入口径不一样，所以不能只赌一个。 */
+  async function krsLangApply(target) {
+    const TH = krsPlotHelper();
+    if (!TH) return { ok: false, err: 'TavernHelper 不可用' };
+    const names = await krsPlotBookNames(TH);
+    if (!names.length) return { ok: false, err: '没有找到世界书' };
+
+    const want = function (entries) {
+      return krsFlattenEntries(entries).map(function (e) {
+        const c = krsEntryLabel(e);
+        const isZh = c.indexOf(KRS_LANG_PREFIX.zh) >= 0;
+        const isJa = c.indexOf(KRS_LANG_PREFIX.ja) >= 0;
+        if (!isZh && !isJa) return e;
+        return krsEntryWithConstant(e, isZh ? (target === 'zh') : (target === 'ja'));
+      });
+    };
+
+    const errs = [];
+    for (let i = 0; i < names.length; i++) {
+      const book = names[i];
+      let done = false;
+      if (typeof TH.updateWorldbookWith === 'function') {
+        try {
+          await Promise.resolve(TH.updateWorldbookWith(book, function (entries) { return want(entries); }));
+          done = true;
+        } catch (e) { errs.push('update:' + ((e && e.message) || e)); }
+        if (!done) {
+          try {
+            await Promise.resolve(TH.updateWorldbookWith(book, function (entries) { return want(entries); }, { type: 'character' }));
+            done = true;
+          } catch (e) { errs.push('update(+type):' + ((e && e.message) || e)); }
+        }
+      }
+      if (!done && (typeof TH.replaceWorldbook === 'function' || typeof TH.setWorldbook === 'function')) {
+        try {
+          const raw = await Promise.resolve(TH.getWorldbook(book));
+          const next = want(raw);
+          if (typeof TH.replaceWorldbook === 'function') await Promise.resolve(TH.replaceWorldbook(book, next));
+          else await Promise.resolve(TH.setWorldbook(book, next));
+          done = true;
+        } catch (e) { errs.push('replace:' + ((e && e.message) || e)); }
+      }
+      if (!done) errs.push('no-api:' + book);
+    }
+
+    /* 以回读结果为准 */
+    let mode = '';
+    try { mode = krsLangModeOf(await krsLangScan()); } catch (_) {}
+    if (mode === target) return { ok: true, err: '' };
+    return { ok: false, err: (errs.join(' | ') || ('写入后状态仍是 ' + (mode || '未知'))) };
+  }
+
+  async function krsLangRefresh() {
+    const btn = document.querySelector('.krs-lang-switch');
+    if (!btn) return;
+    let mode = '';
+    try { mode = krsLangModeOf(await krsLangScan()); } catch (_) { mode = ''; }
+    btn.setAttribute('data-mode', mode);
+    const txt = btn.querySelector('.krs-lang-text');
+    if (txt) txt.textContent = KRS_LANG_LABEL[mode] || '未找到';
+    btn.title = KRS_LANG_TIP[mode] || '没找到 [中文-对白美化] / [日文-对白美化] 条目';
+  }
+
+  async function krsLangToggle() {
+    const btn = document.querySelector('.krs-lang-switch');
+    if (krsLangBusy || !btn) return;
+    krsLangBusy = true;
+    btn.classList.add('busy');
+    const txt = btn.querySelector('.krs-lang-text');
+    let failed = false;
+    try {
+      const r = await krsLangScan();
+      if (!r.found) {
+        failed = true;
+        btn.setAttribute('data-mode', 'err');
+        if (txt) txt.textContent = '未找到';
+        btn.title = '世界书里没有 [中文-对白美化] / [日文-对白美化] 条目';
+        console.warn('[对白语言] 未找到条目');
+        return;
+      }
+      const next = (krsLangModeOf(r) === 'zh') ? 'ja' : 'zh';
+      const res = await krsLangApply(next);
+      if (!res.ok) {
+        failed = true;
+        btn.setAttribute('data-mode', 'err');
+        if (txt) txt.textContent = '切换失败';
+        btn.title = '切换失败：' + res.err;
+        console.warn('[对白语言] 切换失败：', res.err);
+        return;
+      }
+      if (txt) txt.textContent = KRS_LANG_LABEL[next];
+      btn.setAttribute('data-mode', next);
+    } catch (e) {
+      failed = true;
+      btn.setAttribute('data-mode', 'err');
+      if (txt) txt.textContent = '切换异常';
+      btn.title = String((e && e.message) || e);
+      console.warn('[对白语言] 异常：', e);
+    } finally {
+      krsLangBusy = false;
+      btn.classList.remove('busy');
+      if (failed) setTimeout(function () { try { krsLangRefresh(); } catch (_) {} }, 6000);
+      else { try { await krsLangRefresh(); } catch (_) {} }
+    }
+  }
+
   function openPlotPanel() {
     let modal = document.getElementById('krs-plot-modal-root');
     if (modal) modal.remove();
@@ -4462,6 +4666,10 @@
     root.addEventListener('click', async (e) => {
       const plotHub = e.target.closest('.krs-plot-hub-btn');
       if (plotHub) { openPlotPanel(); return; }
+
+      /* 对白格式开关（中文 / 日文世界书） */
+      const langBtn = e.target.closest('.krs-lang-switch');
+      if (langBtn) { await krsLangToggle(); return; }
 
       // 🌟 1. 顶部总相册入口点击触发
       const hubBtn = e.target.closest('.cg-hub-btn');
@@ -4969,6 +5177,12 @@
   function init() {
     bindEvents();
     renderAll();
+    /* 对白格式开关的初始状态（世界书接口可能还没就绪，隔一会儿补两次） */
+    try {
+      krsLangRefresh();
+      setTimeout(krsLangRefresh, 1500);
+      setTimeout(krsLangRefresh, 4000);
+    } catch (_) {}
   }
 
   init();
